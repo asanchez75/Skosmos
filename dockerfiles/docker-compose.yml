@@ -3,24 +3,30 @@ version: '3.7'
 services:
   fuseki:
     container_name: skosmos-fuseki
+    restart: always
     hostname: fuseki
-    image: stain/jena-fuseki
+    build:
+      context: ..
+      dockerfile: dockerfiles/Dockerfile.fuseki
+#   image: stain/jena-fuseki
     environment:
-      - ADMIN_PASSWORD=admin
+      - ADMIN_PASSWORD=YhuTR2#
       - JVM_ARGS=-Xmx2g
     ports:
       - 9030:3030
   # You can uncomment the line below to have a local volume bound onto the container, or
   # visit https://hub.docker.com/r/stain/jena-fuseki/ for other alternatives
-  # volumes:
-  #  - ${PWD}/fuseki:/fuseki
     volumes:
+      - type: bind
+        source: ./fuseki
+        target: /fuseki
       - type: bind
         source: ./config/skosmos.ttl
         target: /fuseki/configuration/skosmos.ttl
   fuseki-cache:
     container_name: skosmos-fuseki-cache
     hostname: fuseki-cache
+    restart: always
     image: varnish
     ports:
       - 9031:80
@@ -30,6 +36,7 @@ services:
         target: /etc/varnish/default.vcl
   skosmos:
     container_name: skosmos-web
+    restart: always
     hostname: skosmos
     build:
       context: ..
@@ -43,3 +50,6 @@ services:
       - type: bind
         source: ./config/config-docker-compose.ttl
         target: /var/www/html/config.ttl
+      - type: bind
+        source: ./config/.htaccess
+        target: /var/www/html/.htaccess
